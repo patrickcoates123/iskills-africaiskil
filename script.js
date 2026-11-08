@@ -17,26 +17,31 @@ document.querySelectorAll('#main-nav a').forEach((link) => {
 const form = document.querySelector('#enquiry-form');
 
 if (form) {
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    const status = form.querySelector('.form-status');
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    status.textContent = 'Sending your enquiry…';
 
-    const data = new FormData(form);
-    const nameAndCompany = String(data.get('name') || '').trim();
-    const email = String(data.get('email') || '').trim();
-    const support = String(data.get('support') || '').trim();
-    const message = String(data.get('message') || '').trim();
-    const subject = `ISkills Africa enquiry from ${nameAndCompany}`;
-    const body = [
-      `Name & company: ${nameAndCompany}`,
-      `Work email: ${email}`,
-      `Support: ${support}`,
-      '',
-      'Solution, target markets & priorities:',
-      message,
-    ].join('\n');
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' },
+      });
+      const result = await response.json();
 
-    const mailto = `mailto:patrick.coates@iskillsuk.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    form.querySelector('.form-status').textContent = 'Opening your email client…';
-    window.location.href = mailto;
+      if (!response.ok || result.success !== 'true') {
+        throw new Error('Submission failed');
+      }
+
+      form.reset();
+      status.textContent = 'Thank you. Your enquiry has been sent.';
+    } catch (error) {
+      status.textContent = 'The enquiry could not be sent. Please try again.';
+    } finally {
+      submitButton.disabled = false;
+    }
   });
 }
