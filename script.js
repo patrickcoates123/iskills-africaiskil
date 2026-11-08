@@ -19,24 +19,24 @@ const form = document.querySelector('#enquiry-form');
 if (form) {
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+
     const data = new FormData(form);
-    const brief = [
-      'ISKILLS AFRICA — ENQUIRY BRIEF',
-      '',
-      `Name & company: ${data.get('name')}`,
-      `Work email: ${data.get('email')}`,
-      `Support: ${data.get('support')}`,
+    const nameAndCompany = String(data.get('name') || '').trim();
+    const email = String(data.get('email') || '').trim();
+    const support = String(data.get('support') || '').trim();
+    const message = String(data.get('message') || '').trim();
+    const subject = `ISkills Africa enquiry from ${nameAndCompany}`;
+    const body = [
+      `Name & company: ${nameAndCompany}`,
+      `Work email: ${email}`,
+      `Support: ${support}`,
       '',
       'Solution, target markets & priorities:',
-      data.get('message'),
+      message,
     ].join('\n');
-    const blob = new Blob([brief], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'iskills-africa-enquiry.txt';
-    link.click();
-    URL.revokeObjectURL(url);
-    form.querySelector('.form-status').textContent = 'Your enquiry brief has been downloaded.';
+
+    const mailto = `mailto:patrick.coates@iskillsuk.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    form.querySelector('.form-status').textContent = 'Opening your email client…';
+    window.location.href = mailto;
   });
 }
